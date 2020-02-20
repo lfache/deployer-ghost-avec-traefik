@@ -53,10 +53,10 @@ services:
 
 volumes:
   mysql-data:
-    name: grottedubarbu-mysql-data
+    name: mysql-data
 
   www-data:
-    name: grottedubarbu-www-data
+    name: www-data
 
 networks:
   lan:
