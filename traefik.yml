@@ -1,0 +1,10 @@
+  api:
+    insecure: true
+
+  providers:
+    docker:
+      exposedByDefault: false
+  
+  entryPoints:
+      http:
+        address: :80

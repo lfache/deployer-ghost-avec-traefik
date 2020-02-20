@@ -1,0 +1,66 @@
+version: '3.7'
+services:
+    reverse-proxy:
+        image: traefik:2.1
+        restart: always
+        ports:
+          - "80:80"
+          - "8080:8080"
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+          - ./traefik.yml:/etc/traefik/traefik.yml:ro
+        networks:
+            - traefik
+        container_name: traefik
+
+    ghost:
+        image: ghost:3
+        restart: always
+        environment:
+            database__client: mysql
+            database__connection__host: db
+            database__connection__user: ghost
+            database__connection__password: motdepasseutilisateurghost
+            database__connection__database: ghost
+            url: http://ghost.docker.localhost/
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=traefik"
+            - "traefik.http.services.monblog.loadbalancer.server.port=2368"
+            - "traefik.http.routers.monblog.rule=Host(`ghost.docker.localhost`)"
+            - "traefik.http.routers.monblog.entrypoints=http"
+        volumes:
+            - www-data:/var/lib/ghost/content
+        networks:
+            - traefik
+            - lan
+        container_name: ghost
+
+    db:
+        image: mysql:5.7
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: motdepasseutilisateurroot
+            MYSQL_USER: ghost
+            MYSQL_DATABASE: ghost
+            MYSQL_PASSWORD: motdepasseutilisateurghost
+        volumes:
+            - mysql-data:/var/lib/mysql
+        networks: 
+            - lan
+        container_name: mysql
+
+
+volumes:
+  mysql-data:
+    name: grottedubarbu-mysql-data
+
+  www-data:
+    name: grottedubarbu-www-data
+
+networks:
+  lan:
+    name: lan
+
+  traefik:
+    name: traefik
